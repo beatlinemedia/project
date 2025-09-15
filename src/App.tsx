@@ -5,6 +5,7 @@ import About from './components/About';
 import Artists from './components/Artists';
 import Releases from './components/Releases';
 import Contact from './components/Contact';
+import DemoSubmit from './components/DemoSubmit';
 import ScrollToTop from './components/ScrollToTop';
 import Footer from './components/Footer'; // footer import
 
@@ -20,6 +21,7 @@ function App() {
         <Contact />
       </main>
 
+      <DemoSubmit />
       <ScrollToTop />
       {/* Footer */}
       <Footer />
