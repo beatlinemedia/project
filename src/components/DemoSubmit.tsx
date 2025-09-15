@@ -16,7 +16,7 @@ const DemoSubmit: React.FC = () => {
 
   const modalRef = useRef<HTMLDivElement | null>(null);
 
-  // ESC kapatma
+  // ESC ile kapat
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && (setOpen(false), setErrOpen(null));
     document.addEventListener("keydown", onKey);
@@ -34,7 +34,7 @@ const DemoSubmit: React.FC = () => {
 
   const onFilePick = (f: File | null) => {
     if (!f) return setFile(null);
-    const maxBytes = 25 * 1024 * 1024; // 25MB öneri
+    const maxBytes = 25 * 1024 * 1024; // ~25MB
     if (f.size > maxBytes) {
       setErrOpen("File is too large. Please keep it under 25MB.");
       return;
@@ -44,27 +44,20 @@ const DemoSubmit: React.FC = () => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       setSending(true);
       setErrOpen(null);
 
       const fd = new FormData();
-      // Getform alan isimleri serbest, anlaşılır tutuyoruz:
       fd.append("name", fullName);
       fd.append("email", email);
       fd.append("message", message);
       if (file) fd.append("file", file);
-
-      // basit honeypot (botlar için görünmez alan) — istersen kaldır:
+      // basit honeypot
       fd.append("_gotcha", "");
 
-      const res = await fetch(GETFORM_ENDPOINT, {
-        method: "POST",
-        body: fd,
-      });
+      const res = await fetch(GETFORM_ENDPOINT, { method: "POST", body: fd });
 
-      // Getform başarılı olunca genelde 200/OK döner
       if (!res.ok) {
         let msg = `Request failed (${res.status})`;
         try {
@@ -74,7 +67,7 @@ const DemoSubmit: React.FC = () => {
         throw new Error(msg);
       }
 
-      // Temizle + başarı popup
+      // temizle + başarı popup
       setOpen(false);
       setFullName("");
       setEmail("");
@@ -91,14 +84,16 @@ const DemoSubmit: React.FC = () => {
 
   return (
     <>
-      {/* Trigger – Desktop (sol alt) */}
+      {/* Trigger – tek buton (mobil + desktop aynı görünüm, konum responsive) */}
       <button
         type="button"
         onClick={() => setOpen(true)}
         className="
-          hidden md:inline-flex
-          fixed bottom-6 left-6 z-40
-          items-center gap-2 px-4 py-3 rounded-xl
+          fixed z-40
+          left-4 md:left-6
+          bottom-[calc(1rem+env(safe-area-inset-bottom))] md:bottom-6
+          inline-flex items-center gap-2
+          px-4 py-3 rounded-xl
           border border-white/10 bg-black/60 backdrop-blur
           text-white/90 transition-all duration-300
           hover:bg-[#9B2CBA]/70 hover:text-white hover:border-[#9B2CBA]/50
@@ -110,31 +105,6 @@ const DemoSubmit: React.FC = () => {
         <span className="font-medium">Submit Demo</span>
       </button>
 
-      {/* Trigger – Mobile (tam genişlik alt bar) */}
-      <div
-        className="
-          md:hidden fixed inset-x-0 bottom-0 z-40
-          bg-gradient-to-r from-[#8a23ac] to-[#25d0c2]
-          text-white
-          px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)]
-          shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.6)]
-        "
-      >
-        <button
-          onClick={() => setOpen(true)}
-          className="
-            w-full inline-flex items-center justify-center gap-2
-            font-semibold tracking-wide
-            bg-black/20 hover:bg-black/25
-            border border-white/15 rounded-xl
-            px-5 py-3 transition
-          "
-        >
-          <Send className="w-5 h-5" />
-          Submit Demo
-        </button>
-      </div>
-
       {/* Modal */}
       {open && (
         <div className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-6">
@@ -142,7 +112,11 @@ const DemoSubmit: React.FC = () => {
             ref={modalRef}
             className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-black/80 p-6 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_30px_80px_-20px_rgba(155,44,186,0.35)]"
           >
-            <button onClick={() => setOpen(false)} className="absolute right-3 top-3 p-2 rounded-lg hover:bg-white/5" aria-label="Close">
+            <button
+              onClick={() => setOpen(false)}
+              className="absolute right-3 top-3 p-2 rounded-lg hover:bg-white/5"
+              aria-label="Close"
+            >
               <X className="w-5 h-5 text-white/70" />
             </button>
 
