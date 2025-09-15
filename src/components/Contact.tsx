@@ -1,26 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Mail, Instagram, Twitter, Youtube, X, Upload, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Mail, Instagram, Twitter, Youtube, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import RevealOnScroll from './RevealOnScroll';
 import SectionTitle from './SectionTitle';
-import Card from './Card';
 
-const FORMSPREE_FORM_ID = import.meta.env.VITE_FORMSPREE_FORM_ID || 'REPLACE_ME';
-const FORM_ENDPOINT = `https://formspree.io/f/${FORMSPREE_FORM_ID}`;
+const FORM_ENDPOINT = 'https://formspree.io/f/mwpnjwpz';
 
 const Contact: React.FC = () => {
-  // modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalName, setModalName] = useState('');
-  const [modalMessage, setModalMessage] = useState('');
-  const [modalFile, setModalFile] = useState<File | null>(null);
-
-  // popups
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
   const [successOpen, setSuccessOpen] = useState(false);
   const [errorOpen, setErrorOpen] = useState<string | null>(null);
-
   const modalRef = useRef<HTMLDivElement | null>(null);
 
-  // esc ile kapat
+  // ESC ile kapatma
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -46,7 +40,11 @@ const Contact: React.FC = () => {
 
   const postToFormspree = async (fd: FormData) => {
     try {
-      const res = await fetch(FORM_ENDPOINT, { method: 'POST', body: fd, headers: { Accept: 'application/json' } });
+      const res = await fetch(FORM_ENDPOINT, {
+        method: 'POST',
+        body: fd,
+        headers: { Accept: 'application/json' },
+      });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.errors?.[0]?.message || `Request failed (${res.status})`);
@@ -58,24 +56,20 @@ const Contact: React.FC = () => {
     }
   };
 
-  const handleModalSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (FORMSPREE_FORM_ID === 'REPLACE_ME') {
-      setErrorOpen('Please set VITE_FORMSPREE_FORM_ID in your .env file.');
-      return;
-    }
     const fd = new FormData();
     fd.append('form_source', 'email_us_card_modal');
-    fd.append('full_name', modalName);
-    fd.append('message', modalMessage);
-    if (modalFile) fd.append('attachment', modalFile);
+    fd.append('full_name', fullName);
+    fd.append('email', email);
+    fd.append('message', message);
     fd.append('_subject', 'New message from Beatline Media (Email Us modal)');
     fd.append('_gotcha', '');
     await postToFormspree(fd);
     setIsModalOpen(false);
-    setModalName('');
-    setModalMessage('');
-    setModalFile(null);
+    setFullName('');
+    setEmail('');
+    setMessage('');
   };
 
   const socialLinks = [
@@ -93,7 +87,7 @@ const Contact: React.FC = () => {
           centered
         />
 
-        {/* Centered single card */}
+        {/* Email Card */}
         <div className="max-w-xl mx-auto">
           <RevealOnScroll delay={200}>
             <button
@@ -106,7 +100,6 @@ const Contact: React.FC = () => {
                 hover:shadow-[0_0_0_1px_rgba(155,44,186,0.35),0_22px_60px_-18px_rgba(155,44,186,0.35)]
               "
             >
-              {/* soft glow */}
               <div
                 className="
                   pointer-events-none absolute -inset-x-6 -top-20 h-40
@@ -157,20 +150,36 @@ const Contact: React.FC = () => {
             ref={modalRef}
             className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-black/80 p-6 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_30px_80px_-20px_rgba(155,44,186,0.35)]"
           >
-            <button onClick={() => setIsModalOpen(false)} className="absolute right-3 top-3 p-2 rounded-lg hover:bg-white/5" aria-label="Close">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute right-3 top-3 p-2 rounded-lg hover:bg-white/5"
+              aria-label="Close"
+            >
               <X className="w-5 h-5 text-white/70" />
             </button>
 
             <h3 className="text-2xl font-bold mb-2">Send us a message</h3>
             <p className="text-white/60 mb-6">We’ll get back to you as soon as possible.</p>
 
-            <form onSubmit={handleModalSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label htmlFor="fullName" className="block text-sm font-medium mb-2">Full Name</label>
                 <input
                   id="fullName"
-                  value={modalName}
-                  onChange={(e) => setModalName(e.target.value)}
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-xl focus:border-[#9B2CBA] focus:outline-none transition-colors"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium mb-2">Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-xl focus:border-[#9B2CBA] focus:outline-none transition-colors"
                   required
                 />
@@ -181,20 +190,11 @@ const Contact: React.FC = () => {
                 <textarea
                   id="userMessage"
                   rows={4}
-                  value={modalMessage}
-                  onChange={(e) => setModalMessage(e.target.value)}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                   className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-xl focus:border-[#9B2CBA] focus:outline-none transition-colors resize-none"
                   required
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Attachment (optional)</label>
-                <label className="flex items-center gap-3 w-full cursor-pointer px-4 py-3 rounded-xl border border-white/10 bg-black/50 hover:border-[#9B2CBA]/50 transition-colors">
-                  <Upload className="w-5 h-5 text-[#9B2CBA]" />
-                  <span className="text-white/80">{modalFile ? modalFile.name : 'Choose a file…'}</span>
-                  <input type="file" className="hidden" onChange={(e) => setModalFile(e.target.files?.[0] ?? null)} />
-                </label>
               </div>
 
               <button
@@ -218,7 +218,10 @@ const Contact: React.FC = () => {
             </div>
             <h4 className="text-xl font-bold mb-2">Message received</h4>
             <p className="text-white/70">Thanks for reaching out. We’ve received your message and will get back to you shortly.</p>
-            <button onClick={() => setSuccessOpen(false)} className="mt-6 inline-flex items-center justify-center px-5 py-2 rounded-xl bg-[#9B2CBA] text-black font-semibold hover:text-white hover:shadow-[0_0_16px_rgba(155,44,186,0.6)] transition">
+            <button
+              onClick={() => setSuccessOpen(false)}
+              className="mt-6 inline-flex items-center justify-center px-5 py-2 rounded-xl bg-[#9B2CBA] text-black font-semibold hover:text-white hover:shadow-[0_0_16px_rgba(155,44,186,0.6)] transition"
+            >
               Close
             </button>
           </div>
@@ -235,7 +238,10 @@ const Contact: React.FC = () => {
             </div>
             <h4 className="text-xl font-bold mb-2">Submission failed</h4>
             <p className="text-white/70">{errorOpen}</p>
-            <button onClick={() => setErrorOpen(null)} className="mt-6 inline-flex items-center justify-center px-5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white transition">
+            <button
+              onClick={() => setErrorOpen(null)}
+              className="mt-6 inline-flex items-center justify-center px-5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white transition"
+            >
               Close
             </button>
           </div>
