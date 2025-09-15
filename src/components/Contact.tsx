@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Mail, Instagram, Twitter, Youtube, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Mail, Instagram, Twitter, Youtube, X, CheckCircle2, AlertCircle, Music2 } from 'lucide-react';
 import RevealOnScroll from './RevealOnScroll';
 import SectionTitle from './SectionTitle';
 
@@ -74,7 +74,7 @@ const Contact: React.FC = () => {
 
   const socialLinks = [
     { icon: Instagram, href: 'https://www.instagram.com/beatlinemedia', label: 'Instagram' },
-    { icon: Twitter, href: 'https://www.tiktok.com/@beatlinemedia', label: 'TikTok' },
+    { icon: Music2, href: 'https://www.tiktok.com/@beatlinemedia', label: 'TikTok' },
     { icon: Youtube, href: 'https://www.youtube.com/@beatlinemediacom', label: 'YouTube' },
   ];
 
