@@ -74,8 +74,8 @@ const Contact: React.FC = () => {
 
   const socialLinks = [
     { icon: Instagram, href: 'https://www.instagram.com/beatlinemedia', label: 'Instagram' },
-    { icon: Twitter, href: '#', label: 'Twitter' },
-    { icon: Youtube, href: '#', label: 'YouTube' },
+    { icon: Twitter, href: 'https://www.tiktok.com/@beatlinemedia', label: 'TikTok' },
+    { icon: Youtube, href: 'https://www.youtube.com/@beatlinemediacom', label: 'YouTube' },
   ];
 
   return (
