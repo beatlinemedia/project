@@ -113,8 +113,8 @@ const Contact: React.FC = () => {
                   <Mail className="w-7 h-7" />
                 </div>
                 <div>
-                  <div className="text-xl md:text-2xl font-bold">Email Us</div>
-                  <div className="text-white/70 mt-1">support@beatlinemedia.com</div>
+                  <div className="text-xl md:text-2xl font-bold">Let’s Talk!</div>
+                  <div className="text-white/70 mt-1">Click to send a message.</div>
                 </div>
               </div>
             </button>
