@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Upload, X, CheckCircle2, AlertCircle, Send } from "lucide-react";
 
-// env
-const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_KEY as string | undefined;
-const API_ENDPOINT = "https://api.web3forms.com/submit";
+const GETFORM_ENDPOINT = "https://getform.io/f/bolzkzla"; // senin endpointin
 
 const DemoSubmit: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -14,15 +12,18 @@ const DemoSubmit: React.FC = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [sending, setSending] = useState(false);
 
   const modalRef = useRef<HTMLDivElement | null>(null);
 
-  // ESC + click-outside
+  // ESC kapatma
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && (setOpen(false), setErrOpen(null));
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, []);
+
+  // modal dışında tıkla → kapat
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       if (open && modalRef.current && !modalRef.current.contains(e.target as Node)) setOpen(false);
@@ -33,7 +34,7 @@ const DemoSubmit: React.FC = () => {
 
   const onFilePick = (f: File | null) => {
     if (!f) return setFile(null);
-    const maxBytes = 25 * 1024 * 1024; // 25MB
+    const maxBytes = 25 * 1024 * 1024; // 25MB öneri
     if (f.size > maxBytes) {
       setErrOpen("File is too large. Please keep it under 25MB.");
       return;
@@ -43,37 +44,54 @@ const DemoSubmit: React.FC = () => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!WEB3FORMS_KEY) {
-      setErrOpen("Missing VITE_WEB3FORMS_KEY in environment variables.");
-      return;
-    }
-    const fd = new FormData();
-    fd.append("access_key", WEB3FORMS_KEY);
-    fd.append("subject", "New Demo Submission (Beatline Media)");
-    fd.append("from_name", fullName || "Anonymous");
-    fd.append("from_email", email);
-    fd.append("message", message);
-    fd.append("botcheck", "");
-    if (file) fd.append("attachments", file);
 
     try {
-      const res = await fetch(API_ENDPOINT, { method: "POST", body: fd });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data?.success === false) throw new Error(data?.message || `Request failed (${res.status})`);
+      setSending(true);
+      setErrOpen(null);
 
+      const fd = new FormData();
+      // Getform alan isimleri serbest, anlaşılır tutuyoruz:
+      fd.append("name", fullName);
+      fd.append("email", email);
+      fd.append("message", message);
+      if (file) fd.append("file", file);
+
+      // basit honeypot (botlar için görünmez alan) — istersen kaldır:
+      fd.append("_gotcha", "");
+
+      const res = await fetch(GETFORM_ENDPOINT, {
+        method: "POST",
+        body: fd,
+      });
+
+      // Getform başarılı olunca genelde 200/OK döner
+      if (!res.ok) {
+        let msg = `Request failed (${res.status})`;
+        try {
+          const data = await res.json();
+          if (data?.message) msg = data.message;
+        } catch {}
+        throw new Error(msg);
+      }
+
+      // Temizle + başarı popup
       setOpen(false);
-      setFullName(""); setEmail(""); setMessage(""); setFile(null);
-
+      setFullName("");
+      setEmail("");
+      setMessage("");
+      setFile(null);
       setOkOpen(true);
       setTimeout(() => setOkOpen(false), 3200);
     } catch (err: any) {
       setErrOpen(err?.message || "Something went wrong. Please try again.");
+    } finally {
+      setSending(false);
     }
   };
 
   return (
     <>
-      {/* Trigger – Desktop (sol alt floating) */}
+      {/* Trigger – Desktop (sol alt) */}
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -168,13 +186,16 @@ const DemoSubmit: React.FC = () => {
                     required
                   />
                 </label>
-                <p className="text-xs text-white/40 mt-1">Max 25 MB. If your file is larger, include a download link in your message.</p>
+                <p className="text-xs text-white/40 mt-1">Max ~25 MB önerilir. Daha büyükse link bırak.</p>
               </div>
 
               <div>
                 <label htmlFor="demo-message" className="block text-sm font-medium mb-2">Message</label>
                 <textarea
-                  id="demo-message" rows={4} value={message} onChange={(e) => setMessage(e.target.value)}
+                  id="demo-message"
+                  rows={4}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                   className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-xl focus:border-[#9B2CBA] focus:outline-none transition-colors resize-none"
                   placeholder="Tell us about the track, links, socials…"
                   required
@@ -183,9 +204,10 @@ const DemoSubmit: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full inline-flex items-center justify-center rounded-xl px-5 py-3 bg-[#9B2CBA] text-black font-semibold hover:text-white hover:shadow-[0_0_16px_rgba(155,44,186,0.6)] transition"
+                disabled={sending}
+                className="w-full inline-flex items-center justify-center rounded-xl px-5 py-3 bg-[#9B2CBA] text-black font-semibold hover:text-white hover:shadow-[0_0_16px_rgba(155,44,186,0.6)] transition disabled:opacity-60"
               >
-                Submit Demo
+                {sending ? "Sending…" : "Submit Demo"}
               </button>
             </form>
           </div>
