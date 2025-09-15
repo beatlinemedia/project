@@ -5,6 +5,7 @@ import About from './components/About';
 import Artists from './components/Artists';
 import Releases from './components/Releases';
 import Contact from './components/Contact';
+import ScrollToTop from './components/ScrollToTop';
 import Footer from './components/Footer'; // footer import
 
 function App() {
@@ -18,7 +19,8 @@ function App() {
         <Releases />
         <Contact />
       </main>
-      
+
+      <ScrollToTop />
       {/* Footer */}
       <Footer />
     </div>
