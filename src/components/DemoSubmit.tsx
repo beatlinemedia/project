@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Upload, X, CheckCircle2, AlertCircle, Send } from "lucide-react";
 
-// 🔑 Web3Forms Access Key (Vercel .env dosyasında ayarlayın)
+// env
 const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_KEY as string | undefined;
 const API_ENDPOINT = "https://api.web3forms.com/submit";
 
@@ -17,7 +17,7 @@ const DemoSubmit: React.FC = () => {
 
   const modalRef = useRef<HTMLDivElement | null>(null);
 
-  // ESC + click-outside kapatma
+  // ESC + click-outside
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && (setOpen(false), setErrOpen(null));
     document.addEventListener("keydown", onKey);
@@ -33,7 +33,7 @@ const DemoSubmit: React.FC = () => {
 
   const onFilePick = (f: File | null) => {
     if (!f) return setFile(null);
-    const maxBytes = 25 * 1024 * 1024; // 25 MB
+    const maxBytes = 25 * 1024 * 1024; // 25MB
     if (f.size > maxBytes) {
       setErrOpen("File is too large. Please keep it under 25MB.");
       return;
@@ -47,27 +47,22 @@ const DemoSubmit: React.FC = () => {
       setErrOpen("Missing VITE_WEB3FORMS_KEY in environment variables.");
       return;
     }
-
     const fd = new FormData();
     fd.append("access_key", WEB3FORMS_KEY);
     fd.append("subject", "New Demo Submission (Beatline Media)");
     fd.append("from_name", fullName || "Anonymous");
     fd.append("from_email", email);
     fd.append("message", message);
-    fd.append("botcheck", ""); // spam koruması
+    fd.append("botcheck", "");
     if (file) fd.append("attachments", file);
 
     try {
       const res = await fetch(API_ENDPOINT, { method: "POST", body: fd });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || data?.success === false)
-        throw new Error(data?.message || `Request failed (${res.status})`);
+      if (!res.ok || data?.success === false) throw new Error(data?.message || `Request failed (${res.status})`);
 
       setOpen(false);
-      setFullName("");
-      setEmail("");
-      setMessage("");
-      setFile(null);
+      setFullName(""); setEmail(""); setMessage(""); setFile(null);
 
       setOkOpen(true);
       setTimeout(() => setOkOpen(false), 3200);
@@ -78,52 +73,67 @@ const DemoSubmit: React.FC = () => {
 
   return (
     <>
-      {/* Trigger Button */}
+      {/* Trigger – Desktop (sol alt floating) */}
       <button
         type="button"
         onClick={() => setOpen(true)}
         className="
-          fixed bottom-6 right-6 z-40
-          inline-flex items-center gap-2
-          px-4 py-3 rounded-xl
+          hidden md:inline-flex
+          fixed bottom-6 left-6 z-40
+          items-center gap-2 px-4 py-3 rounded-xl
           border border-white/10 bg-black/60 backdrop-blur
-          text-white/90
-          hover:bg-[#9B2CBA]/70 hover:text-white
-          hover:border-[#9B2CBA]/50
+          text-white/90 transition-all duration-300
+          hover:bg-[#9B2CBA]/70 hover:text-white hover:border-[#9B2CBA]/50
           hover:shadow-[0_0_20px_rgba(155,44,186,0.35)]
-          transition-all duration-300
         "
         aria-label="Send your demo"
       >
         <Send className="w-5 h-5" />
-        <span className="font-medium">Send Your Demo</span>
+        <span className="font-medium">Submit Demo</span>
       </button>
 
-      {/* Modal Form */}
+      {/* Trigger – Mobile (tam genişlik alt bar) */}
+      <div
+        className="
+          md:hidden fixed inset-x-0 bottom-0 z-40
+          bg-gradient-to-r from-[#8a23ac] to-[#25d0c2]
+          text-white
+          px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)]
+          shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.6)]
+        "
+      >
+        <button
+          onClick={() => setOpen(true)}
+          className="
+            w-full inline-flex items-center justify-center gap-2
+            font-semibold tracking-wide
+            bg-black/20 hover:bg-black/25
+            border border-white/15 rounded-xl
+            px-5 py-3 transition
+          "
+        >
+          <Send className="w-5 h-5" />
+          Submit Demo
+        </button>
+      </div>
+
+      {/* Modal */}
       {open && (
         <div className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-6">
           <div
             ref={modalRef}
             className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-black/80 p-6 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_30px_80px_-20px_rgba(155,44,186,0.35)]"
           >
-            <button
-              onClick={() => setOpen(false)}
-              className="absolute right-3 top-3 p-2 rounded-lg hover:bg-white/5"
-              aria-label="Close"
-            >
+            <button onClick={() => setOpen(false)} className="absolute right-3 top-3 p-2 rounded-lg hover:bg-white/5" aria-label="Close">
               <X className="w-5 h-5 text-white/70" />
             </button>
 
             <h3 className="text-2xl font-bold mb-2">Submit your demo</h3>
-            <p className="text-white/60 mb-6">
-              Share your track with us. We review every submission.
-            </p>
+            <p className="text-white/60 mb-6">Share your track with us. We review every submission.</p>
 
             <form onSubmit={submit} className="space-y-5">
               <div>
-                <label htmlFor="demo-fullname" className="block text-sm font-medium mb-2">
-                  Full Name
-                </label>
+                <label htmlFor="demo-fullname" className="block text-sm font-medium mb-2">Full Name</label>
                 <input
                   id="demo-fullname"
                   value={fullName}
@@ -134,9 +144,7 @@ const DemoSubmit: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="demo-email" className="block text-sm font-medium mb-2">
-                  Email
-                </label>
+                <label htmlFor="demo-email" className="block text-sm font-medium mb-2">Email</label>
                 <input
                   type="email"
                   id="demo-email"
@@ -148,16 +156,10 @@ const DemoSubmit: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Your Track (MP3/WAV/ZIP)
-                </label>
-                <label
-                  className="flex items-center gap-3 w-full cursor-pointer px-4 py-3 rounded-xl border border-white/10 bg-black/50 hover:border-[#9B2CBA]/50 transition-colors"
-                >
+                <label className="block text-sm font-medium mb-2">Your Track (MP3/WAV/ZIP)</label>
+                <label className="flex items-center gap-3 w-full cursor-pointer px-4 py-3 rounded-xl border border-white/10 bg-black/50 hover:border-[#9B2CBA]/50 transition-colors">
                   <Upload className="w-5 h-5 text-[#9B2CBA]" />
-                  <span className="text-white/80">
-                    {file ? file.name : "Choose a file…"}
-                  </span>
+                  <span className="text-white/80">{file ? file.name : "Choose a file…"}</span>
                   <input
                     type="file"
                     className="hidden"
@@ -166,20 +168,13 @@ const DemoSubmit: React.FC = () => {
                     required
                   />
                 </label>
-                <p className="text-xs text-white/40 mt-1">
-                  Max 25 MB. If your file is larger, include a download link in your message.
-                </p>
+                <p className="text-xs text-white/40 mt-1">Max 25 MB. If your file is larger, include a download link in your message.</p>
               </div>
 
               <div>
-                <label htmlFor="demo-message" className="block text-sm font-medium mb-2">
-                  Message
-                </label>
+                <label htmlFor="demo-message" className="block text-sm font-medium mb-2">Message</label>
                 <textarea
-                  id="demo-message"
-                  rows={4}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  id="demo-message" rows={4} value={message} onChange={(e) => setMessage(e.target.value)}
                   className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-xl focus:border-[#9B2CBA] focus:outline-none transition-colors resize-none"
                   placeholder="Tell us about the track, links, socials…"
                   required
